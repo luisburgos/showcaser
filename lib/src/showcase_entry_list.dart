@@ -31,6 +31,8 @@ class ShowcaseEntryList extends StatelessWidget {
     this.minTileWidth = kShowcaseMinTileWidth,
     this.maxColumns = kShowcaseMaxColumns,
     this.onEntryPressed,
+    this.shrinkWrap = false,
+    this.physics,
     super.key,
   });
 
@@ -60,6 +62,24 @@ class ShowcaseEntryList extends StatelessWidget {
   /// nearest [Navigator].
   final void Function(BuildContext context, ShowcaseEntry entry)?
   onEntryPressed;
+
+  /// Whether the list sizes itself to its content rather than to the space it
+  /// is given.
+  ///
+  /// False by default: a gallery is normally the scrolling body of a page, and
+  /// building every row up front costs the laziness that makes a long
+  /// catalogue cheap. Set it true — with [physics] of
+  /// [NeverScrollableScrollPhysics] — to nest the gallery inside another
+  /// scroll view, which is the only way it can be given unbounded height
+  /// without overflowing.
+  final bool shrinkWrap;
+
+  /// The scroll physics of the underlying list.
+  ///
+  /// Pass [NeverScrollableScrollPhysics] alongside [shrinkWrap] when the
+  /// gallery is nested in a parent that already scrolls, so the two do not
+  /// compete for the same drag.
+  final ScrollPhysics? physics;
 
   /// How many columns fit in [availableWidth], between one and [maxColumns].
   ///
@@ -95,6 +115,8 @@ class ShowcaseEntryList extends StatelessWidget {
         if (columns == 1) {
           return ListView.separated(
             padding: padding,
+            shrinkWrap: shrinkWrap,
+            physics: physics,
             itemCount: entries.length,
             separatorBuilder: (_, _) => SizedBox(height: gap),
             itemBuilder: (context, index) => _tile(context, entries[index]),
@@ -108,6 +130,8 @@ class ShowcaseEntryList extends StatelessWidget {
         // two-line subtitle costs height only in the row that has one.
         return ListView.separated(
           padding: padding,
+          shrinkWrap: shrinkWrap,
+          physics: physics,
           itemCount: (entries.length / columns).ceil(),
           separatorBuilder: (_, _) => SizedBox(height: gap),
           itemBuilder: (context, rowIndex) {

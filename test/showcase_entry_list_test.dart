@@ -108,6 +108,50 @@ void main() {
       expect(find.byType(ShowcaseEntryTile), findsNothing);
     });
 
+    testWidgets('nests inside another scroll view when shrink-wrapped', (
+      tester,
+    ) async {
+      // The unbounded-height case: a gallery used as one section of a page
+      // that already scrolls. Without shrinkWrap this throws "Vertical
+      // viewport was given unbounded height".
+      await pumpAt(
+        tester,
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              ShowcaseEntryList(
+                entries: entries(6),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+              ),
+            ],
+          ),
+        ),
+        size: const Size(1400, 900),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ShowcaseEntryTile), findsNWidgets(6));
+    });
+
+    testWidgets('shrink-wraps a single column too', (tester) async {
+      await pumpAt(
+        tester,
+        SingleChildScrollView(
+          child: ShowcaseEntryList(
+            entries: entries(3),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+          ),
+        ),
+        size: const Size(400, 900),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(ShowcaseEntryTile), findsNWidgets(3));
+    });
+
     testWidgets('an onEntryPressed override receives the tapped entry', (
       tester,
     ) async {
