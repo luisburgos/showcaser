@@ -1,0 +1,77 @@
+name: ci
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  semantic_pull_request:
+    permissions:
+      pull-requests: read
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/semantic_pull_request.yml@v1
+
+  # CHANGELOG.md is auto-generated from git history by conventional-changelog,
+  # so it carries verbatim commit subjects (including any historical typos)
+  # rather than authored prose. Spell-gating it would fail the build on words
+  # nobody can edit without rewriting history.
+  spell-check:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/spell_check.yml@v1
+    with:
+      includes: |
+        **/*.md
+        !CHANGELOG.md
+      modified_files_only: false
+
+  # .fvmrc is the single source of truth for the SDK version: it is what the
+  # local `fvm flutter` uses, so reading it here keeps CI and developer
+  # machines on the same SDK instead of drifting apart silently.
+  flutter_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.read.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read .fvmrc
+        id: read
+        run: |
+          version=$(jq -er '.flutter' .fvmrc)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Flutter $version (from .fvmrc)"
+
+  build:
+    needs: flutter_version
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/flutter_package.yml@v1
+    with:
+      flutter_version: ${{ needs.flutter_version.outputs.version }}
+
+  # The example is a separate package, excluded from the root analysis
+  # options, so the job above never sees it. Without this it breaks silently
+  # whenever the library's API changes.
+  example:
+    needs: flutter_version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: example
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.flutter_version.outputs.version }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Format
+        run: dart format --set-exit-if-changed .
+
+      - name: Analyze
+        run: flutter analyze

@@ -1,0 +1,53 @@
+# Files kept out of the published pub.dev archive.
+#
+# .pubignore REPLACES .gitignore for `dart pub publish` (it does not merge with
+# it): once this file exists, only its patterns are consulted, so everything not
+# listed here still ships. Keep it tight — exclude developer-only artifacts, not
+# the package itself.
+#
+# What must still ship (do NOT add these): lib/, example/ (pub.dev's Example
+# tab), README.md, CHANGELOG.md, LICENSE, pubspec.yaml, analysis_options.yaml.
+
+# The package's own test suite. Useful in the repo, dead weight in a consumer's
+# pub cache.
+test/
+
+# The example's web scaffolding exists only to deploy the example to GitHub
+# Pages. pub.dev renders example/lib on the Example tab; the web/ entry point
+# is dead weight in a consumer's pub cache.
+example/web/
+
+# Repository and CI configuration, not consumer-facing.
+.github/
+
+# Agent config and contributor process docs.
+.claude/
+CLAUDE.md
+CONTRIBUTING.md
+
+# Node tooling for changelog generation (conventional-changelog reads these).
+# Meaningless to a Dart consumer.
+package.json
+package-lock.json
+node_modules/
+
+# Developer and CI tooling, not consumer-facing.
+lefthook.yml
+.changelogrc.js
+coverage/
+
+# Build output and tool caches. CRITICAL: .pubignore REPLACES .gitignore for
+# publishing, so the build artifacts .gitignore normally hides would otherwise
+# ship. Re-list them here.
+build/
+.dart_tool/
+.fvm/
+.idea/
+.vscode/
+coverage
+migrate_working_dir/
+.flutter-plugins
+.flutter-plugins-dependencies
+.DS_Store
+*.iml
+*.log

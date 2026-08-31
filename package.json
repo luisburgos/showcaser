@@ -1,0 +1,12 @@
+{
+  "name": "showcaser",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "changelog": "conventional-changelog -n ./.changelogrc.js -i CHANGELOG.md -s"
+  },
+  "devDependencies": {
+    "conventional-changelog-cli": "^5.0.0",
+    "conventional-changelog-conventionalcommits": "^9.3.1"
+  }
+}

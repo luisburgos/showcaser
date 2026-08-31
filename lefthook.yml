@@ -1,0 +1,50 @@
+# Git hooks for showcaser, managed by lefthook (https://lefthook.dev).
+#
+# Setup (one time, after cloning):
+#   fvm install          # ensure the pinned Flutter SDK (.fvmrc) is present
+#   lefthook install     # wire the git hooks
+#
+# The pre-push hook mirrors the CI gates (dart format / analyze / test with
+# 100% coverage / markdown spell-check) so failures are caught locally BEFORE a
+# branch is pushed and a PR is opened.
+#
+# All commands run through `fvm` so they use the SDK pinned in .fvmrc
+# (Flutter 3.44.0) rather than whatever happens to be first on PATH.
+
+pre-push:
+  parallel: false
+  commands:
+    fvm-check:
+      # Fail clearly if fvm is missing rather than silently using a bare SDK.
+      run: 'command -v fvm >/dev/null 2>&1 || { echo "fvm is required for the pre-push hook. Install it from https://fvm.app"; exit 1; }'
+    format:
+      priority: 1
+      run: fvm dart format --output=none --set-exit-if-changed .
+      fail_text: "❌ dart format failed. Run: fvm dart format ."
+    analyze:
+      priority: 2
+      run: fvm flutter analyze
+      fail_text: "❌ flutter analyze found issues."
+    test:
+      # Mirrors CI's coverage gate (very_good test --coverage --min-coverage 100).
+      # Runs via `fvm exec` so it uses the pinned SDK. Falls back to a plain
+      # `fvm flutter test` (no coverage gate) if very_good_cli isn't installed —
+      # CI remains the authoritative 100%-coverage gate.
+      priority: 3
+      run: 'if command -v very_good >/dev/null 2>&1; then fvm exec very_good test --coverage --min-coverage 100; else echo "very_good_cli not found; running tests without the coverage gate (CI still enforces 100%). Install: dart pub global activate very_good_cli"; fvm flutter test; fi'
+      fail_text: "❌ tests or 100% coverage failed. Run: fvm exec very_good test --coverage --min-coverage 100"
+    spell-check:
+      # Mirrors the CI spell-check gate (cspell over **/*.md, .github/cspell.json).
+      # Prefers a local/global cspell, falls back to npx; if neither Node tool
+      # is available it warns and skips (CI remains the authoritative gate).
+      #
+      # NOTE: --exclude CHANGELOG.md is REQUIRED, not redundant with an
+      # ignorePaths entry in cspell.json. When cspell is given an explicit file
+      # glob ("**/*.md") that matches a file, the explicit arg WINS over
+      # ignorePaths — so a config entry alone would NOT exempt the file.
+      # CHANGELOG.md is auto-generated from git history (conventional-changelog):
+      # it holds verbatim historical commit subjects (incl. old typos), which are
+      # not authored prose and must not be spell-gated.
+      priority: 4
+      run: 'if command -v cspell >/dev/null 2>&1; then cspell --config .github/cspell.json "**/*.md" --exclude CHANGELOG.md --no-progress; elif command -v npx >/dev/null 2>&1; then npx --yes cspell --config .github/cspell.json "**/*.md" --exclude CHANGELOG.md --no-progress; else echo "cspell/npx not found; skipping spell-check locally (CI still enforces it)"; fi'
+      fail_text: "❌ spell-check failed. Add valid words to .github/cspell.json or fix the typo."

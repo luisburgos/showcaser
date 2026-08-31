@@ -1,0 +1,35 @@
+name: license_check
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "pubspec.yaml"
+      - ".github/workflows/license_check.yaml"
+  push:
+    branches:
+      - main
+    paths:
+      - "pubspec.yaml"
+      - ".github/workflows/license_check.yaml"
+
+jobs:
+  license_check:
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1
+    with:
+      # This is a Flutter package, so dependencies must be resolved with
+      # `flutter pub get`. The reusable workflow derives that from
+      # `flutter_version` being non-empty (its `is_flutter` env); leaving it
+      # unset makes the job run `dart pub get`, which fails with "Because
+      # flutter_flowin requires the Flutter SDK, version solving failed."
+      # Pinned to the same version as ci.yaml's build job.
+      flutter_version: "3.44.x"
+      # Zlib covers `vector_math`, which ships with the Flutter SDK itself
+      # (alongside sky_engine/meta) and is therefore unavoidable in any
+      # Flutter package. It is a permissive, BSD-style license.
+      allowed: "MIT,BSD-3-Clause,BSD-2-Clause,Apache-2.0,Zlib"

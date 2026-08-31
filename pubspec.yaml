@@ -1,0 +1,25 @@
+name: showcaser
+description: "A gallery shell for component showcases: responsive entry tiles with cover art, routing to the page each one documents."
+version: 0.1.0
+repository: https://github.com/luisburgos/showcaser
+
+# Max 5, lowercase alphanumeric or hyphens, 2-32 chars each.
+topics:
+  - showcase
+  - gallery
+  - catalog
+  - design-system
+  - widgets
+
+environment:
+  sdk: ^3.11.0
+  flutter: ">=3.41.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^10.2.0
