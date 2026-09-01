@@ -46,7 +46,7 @@ class ExampleApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      // No ShowcaseStyleScope: this is the zero-config path, where the gallery
+      // No ShowcaseTheme: this is the zero-config path, where the gallery
       // dresses itself in stock Material.
       home: Scaffold(
         appBar: AppBar(title: const Text('showcaser')),

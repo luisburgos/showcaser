@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:showcaser/src/showcase_entry.dart';
-import 'package:showcaser/src/showcase_style.dart';
+import 'package:showcaser/src/showcase_theme.dart';
 
 /// One [ShowcaseEntry] as a tappable tile, routing to its page.
 ///
 /// Composes the content — cover art or icon, title, subtitle — and hands it to
-/// the ambient [ShowcaseStyle] to be dressed. The layout lives here so every
-/// design system's gallery reads the same; only the surface is substituted.
+/// the ambient theme's tile builder to be dressed. The layout lives here so
+/// every design system's gallery reads the same; only the surface is
+/// substituted.
 class ShowcaseEntryTile extends StatelessWidget {
   /// Creates a tile for [entry].
   const ShowcaseEntryTile(this.entry, {this.onPressed, super.key});
@@ -23,6 +24,7 @@ class ShowcaseEntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showcase = ShowcaseTheme.of(context);
     final coverArt = entry.coverArt;
     final icon = entry.icon;
     final theme = Theme.of(context);
@@ -35,10 +37,10 @@ class ShowcaseEntryTile extends StatelessWidget {
         // illustration on the tile a second pictogram is redundant weight.
         if (coverArt != null) ...[
           coverArt(context),
-          const SizedBox(height: 8),
+          SizedBox(height: showcase.coverSpacing),
         ] else if (icon != null) ...[
           icon,
-          const SizedBox(height: 8),
+          SizedBox(height: showcase.coverSpacing),
         ],
         Text(entry.title, style: theme.textTheme.titleSmall),
         Text(
@@ -50,7 +52,7 @@ class ShowcaseEntryTile extends StatelessWidget {
       ],
     );
 
-    return ShowcaseStyleScope.of(context).buildTile(
+    return showcase.tileBuilder.buildTile(
       context,
       entry: entry,
       content: content,

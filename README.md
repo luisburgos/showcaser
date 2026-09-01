@@ -4,7 +4,8 @@
 
 The index page of a design system's demo app: a responsive grid of entry tiles,
 each with a cover art, a title and a subtitle, routing to the page it documents.
-It uses Material by default, or `ShowcaseStyle` to match your own design system.
+It uses Material by default, or a `ShowcaseTheme` to match your own design
+system.
 
 Built to sit alongside [`playgrounder`](https://pub.dev/packages/playgrounder)
 (the playground affordance a showcase page uses) and
@@ -20,8 +21,10 @@ is drawn with). Each is independent; showcaser depends on neither.
   window's
 - **Free-height rows:** a two-line subtitle costs height only in the row that
   has one, which a `GridView` cannot do
-- **Bring your own design system:** `ShowcaseStyle` restyles the tile; Material
-  until you do
+- **Bring your own design system:** a `ShowcaseTileBuilder` in the theme
+  restyles the tile; Material until you do
+- **Themed, not configured:** spacing and column rules are stated once in a
+  `ShowcaseTheme` above the app, not repeated at every list
 
 ## Installation 💻
 
@@ -73,12 +76,13 @@ on the same tile is redundant weight.
 
 ### Matching your design system
 
-`ShowcaseStyle` has one override point, the tile. Subclass it and scope it once
-above your app:
+The tile is the one point a design system substitutes. Implement a
+`ShowcaseTileBuilder`, put it in a `ShowcaseThemeData`, and scope it once above
+your app:
 
 ```dart
-class MyShowcaseStyle extends ShowcaseStyle {
-  const MyShowcaseStyle();
+class MyTileBuilder extends ShowcaseTileBuilder {
+  const MyTileBuilder();
 
   @override
   Widget buildTile(
@@ -91,16 +95,24 @@ class MyShowcaseStyle extends ShowcaseStyle {
   }
 }
 
-ShowcaseStyleScope(
-  style: const MyShowcaseStyle(),
+ShowcaseTheme(
+  data: const ShowcaseThemeData(
+    tileBuilder: MyTileBuilder(),
+    gap: 12,
+  ),
   child: child,
 );
 ```
 
 The content — cover art, title, subtitle — is composed for you and passed in,
-so an override supplies the surface around it rather than rebuilding the
-layout. That is what keeps every gallery reading the same while the chrome
-changes.
+so a builder supplies the surface around it rather than rebuilding the layout.
+That is what keeps every gallery reading the same while the chrome changes.
+
+`ShowcaseThemeData` also carries the layout: `minTileWidth`, `maxColumns`,
+`gap`, `padding` and `coverSpacing`. Stating them once in the theme is what
+lets every `ShowcaseEntryList` in the app be written as
+`ShowcaseEntryList(entries: ...)`; pass the same values on a single list to
+override the theme there.
 
 ## License 📄
 

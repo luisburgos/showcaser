@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:showcaser/src/showcase_entry.dart';
 import 'package:showcaser/src/showcase_entry_tile.dart';
-
-/// The default narrowest a tile may be laid out at.
-///
-/// Below this a subtitle starts wrapping past two lines and the column stops
-/// reading as a scannable list, so the grid drops a column rather than
-/// squeezing one further. Override with `ShowcaseEntryList.minTileWidth`.
-const double kShowcaseMinTileWidth = 280;
-
-/// The default ceiling on how many columns the grid will use.
-///
-/// Capped rather than left to divide the available width: without a ceiling an
-/// ultrawide window would spread the catalogue into one thin line of tiles, and
-/// a row scanned by title stops being scannable once it reads as a paragraph.
-/// Override with `ShowcaseEntryList.maxColumns`.
-const int kShowcaseMaxColumns = 4;
+import 'package:showcaser/src/showcase_theme.dart';
 
 /// A responsive gallery of showcase entries, each routing to its page.
 ///
-/// One column on a phone, up to [maxColumns] on a desktop. The layout is
-/// driven by the width the list is actually given rather than the window's, so
-/// it still lays out correctly inside a padded or inset parent.
+/// One column on a phone, up to the theme's column ceiling on a desktop. The
+/// layout is driven by the width the list is actually given rather than the
+/// window's, so it still lays out correctly inside a padded or inset parent.
+///
+/// Every layout value falls back to the ambient [ShowcaseTheme], so a design
+/// system states its spacing once above the app rather than at each list. The
+/// constructor arguments override the theme for a single list that needs to
+/// differ — the same shape Material's own widgets use.
 class ShowcaseEntryList extends StatelessWidget {
   /// Creates a gallery over [entries], in order.
   const ShowcaseEntryList({
     required this.entries,
-    this.padding = const EdgeInsets.fromLTRB(16, 8, 16, 48),
-    this.gap = 8,
-    this.minTileWidth = kShowcaseMinTileWidth,
-    this.maxColumns = kShowcaseMaxColumns,
+    this.padding,
+    this.gap,
+    this.minTileWidth,
+    this.maxColumns,
     this.onEntryPressed,
     this.shrinkWrap = false,
     this.physics,
@@ -39,22 +30,17 @@ class ShowcaseEntryList extends StatelessWidget {
   /// The entries to list, in order.
   final List<ShowcaseEntry> entries;
 
-  /// Inset around the grid.
-  ///
-  /// The default is asymmetric on purpose: tighter on top, because whatever
-  /// sits above a gallery — a tab bar, a chip row — usually supplies its own
-  /// gap, and looser on the bottom so the last row can scroll clear of any
-  /// fixed footer.
-  final EdgeInsets padding;
+  /// Overrides the theme's inset around the grid.
+  final EdgeInsets? padding;
 
-  /// The space between tiles, both between columns and between rows.
-  final double gap;
+  /// Overrides the theme's space between tiles.
+  final double? gap;
 
-  /// The narrowest a tile may be laid out at before a column is dropped.
-  final double minTileWidth;
+  /// Overrides the theme's narrowest tile width.
+  final double? minTileWidth;
 
-  /// The most columns the grid will use.
-  final int maxColumns;
+  /// Overrides the theme's column ceiling.
+  final int? maxColumns;
 
   /// Overrides what tapping an entry does.
   ///
@@ -87,7 +73,12 @@ class ShowcaseEntryList extends StatelessWidget {
   /// them, and ignoring those overestimates what fits by a whole gap per
   /// column, which is what pushes the last tile of a row under its minimum.
   @visibleForTesting
-  int columnsFor(double availableWidth, double gap) {
+  static int columnsFor(
+    double availableWidth, {
+    required double gap,
+    required double minTileWidth,
+    required int maxColumns,
+  }) {
     final fitting = (availableWidth + gap) ~/ (minTileWidth + gap);
     return fitting.clamp(1, maxColumns);
   }
@@ -102,11 +93,17 @@ class ShowcaseEntryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ShowcaseTheme.of(context);
+    final effectivePadding = padding ?? theme.padding;
+    final effectiveGap = gap ?? theme.gap;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = columnsFor(
-          constraints.maxWidth - padding.horizontal,
-          gap,
+          constraints.maxWidth - effectivePadding.horizontal,
+          gap: effectiveGap,
+          minTileWidth: minTileWidth ?? theme.minTileWidth,
+          maxColumns: maxColumns ?? theme.maxColumns,
         );
 
         // One column is a plain list. Kept as a ListView rather than a
@@ -114,11 +111,11 @@ class ShowcaseEntryList extends StatelessWidget {
         // free-height, which is what lets a tile grow to its own content.
         if (columns == 1) {
           return ListView.separated(
-            padding: padding,
+            padding: effectivePadding,
             shrinkWrap: shrinkWrap,
             physics: physics,
             itemCount: entries.length,
-            separatorBuilder: (_, _) => SizedBox(height: gap),
+            separatorBuilder: (_, _) => SizedBox(height: effectiveGap),
             itemBuilder: (context, index) => _tile(context, entries[index]),
           );
         }
@@ -129,11 +126,11 @@ class ShowcaseEntryList extends StatelessWidget {
         // an IntrinsicHeight lets each row size to its own tallest tile, so a
         // two-line subtitle costs height only in the row that has one.
         return ListView.separated(
-          padding: padding,
+          padding: effectivePadding,
           shrinkWrap: shrinkWrap,
           physics: physics,
           itemCount: (entries.length / columns).ceil(),
-          separatorBuilder: (_, _) => SizedBox(height: gap),
+          separatorBuilder: (_, _) => SizedBox(height: effectiveGap),
           itemBuilder: (context, rowIndex) {
             final start = rowIndex * columns;
             final rowEntries = entries.skip(start).take(columns).toList();
@@ -141,7 +138,7 @@ class ShowcaseEntryList extends StatelessWidget {
             return IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: gap,
+                spacing: effectiveGap,
                 children: [
                   for (final entry in rowEntries)
                     Expanded(child: _tile(context, entry)),

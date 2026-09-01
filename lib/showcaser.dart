@@ -5,4 +5,5 @@ library;
 export 'src/showcase_entry.dart';
 export 'src/showcase_entry_list.dart';
 export 'src/showcase_entry_tile.dart';
-export 'src/showcase_style.dart';
+export 'src/showcase_theme.dart';
+export 'src/showcase_tile_builder.dart';

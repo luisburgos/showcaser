@@ -5,4 +5,5 @@
 ### Features
 
 * the showcase gallery: `ShowcaseEntry`, `ShowcaseEntryList`,
-  `ShowcaseEntryTile`, and the `ShowcaseStyle` seam with Material defaults.
+  `ShowcaseEntryTile`, and the `ShowcaseTheme` / `ShowcaseThemeData` /
+  `ShowcaseTileBuilder` seam with Material defaults.

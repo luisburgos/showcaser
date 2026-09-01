@@ -24,9 +24,18 @@ rules below are the hard gates an agent must not cross on its own judgment.
 
 ## API invariants
 
-- `ShowcaseStyle` is the single seam through which a consuming design system
-  dresses the gallery. New chrome that a consumer might want to substitute
-  belongs on `ShowcaseStyle`, not hardcoded into the tile.
+- `ShowcaseTileBuilder` is the single seam through which a consuming design
+  system dresses the gallery, and it is carried in `ShowcaseThemeData` rather
+  than injected in its own right — the shape Flutter uses for a behavioral
+  seam (`PageTransitionsBuilder` inside `PageTransitionsTheme`). New chrome a
+  consumer might substitute becomes another builder field on the theme data,
+  never a hardcoded widget in the tile.
+- `ShowcaseThemeData` must keep exact `==`/`hashCode` over every field,
+  including `tileBuilder`. `ShowcaseTheme.updateShouldNotify` compares two of
+  them, so a field left out of equality silently stops propagating.
+- Naming follows Material, not implementation: the widget is `ShowcaseTheme`
+  (never `*Scope`), its field is `data`, and `of(context)` returns the data
+  rather than the widget.
 - **The package depends on no design system and no illustration kit.** It
   imports Material only for raw primitives (`Card`, `InkWell`, `ListView`,
   `Text`) used as neutral scaffolding for the default style. In particular it

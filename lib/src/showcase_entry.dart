@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 /// A single entry in a showcase gallery.
 ///
 /// Deliberately a plain data class over widgets and strings: an entry is
-/// content, not chrome. How it is *drawn* belongs to `ShowcaseStyle`, so the
+/// content, not chrome. How it is *drawn* belongs to the theme's
+/// `ShowcaseTileBuilder`, so the
 /// same catalogue can be rendered by two design systems without being
 /// rewritten.
 ///

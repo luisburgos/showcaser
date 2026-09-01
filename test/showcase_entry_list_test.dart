@@ -26,32 +26,97 @@ Future<void> pumpAt(
 
 void main() {
   group('columnsFor', () {
-    const list = ShowcaseEntryList(entries: []);
+    int columns(
+      double width, {
+      double gap = 8,
+      double minTileWidth = kShowcaseMinTileWidth,
+      int maxColumns = kShowcaseMaxColumns,
+    }) => ShowcaseEntryList.columnsFor(
+      width,
+      gap: gap,
+      minTileWidth: minTileWidth,
+      maxColumns: maxColumns,
+    );
 
     test('never returns fewer than one column', () {
-      expect(list.columnsFor(0, 8), 1);
-      expect(list.columnsFor(100, 8), 1);
+      expect(columns(0), 1);
+      expect(columns(100), 1);
     });
 
     test('counts the gaps between columns, not just the tiles', () {
       // Two 280 tiles plus one 8 gap is 568; a width one pixel short of that
       // must still report a single column.
-      expect(list.columnsFor(567, 8), 1);
-      expect(list.columnsFor(568, 8), 2);
+      expect(columns(567), 1);
+      expect(columns(568), 2);
     });
 
     test('caps at maxColumns however wide the space is', () {
-      expect(list.columnsFor(100000, 8), kShowcaseMaxColumns);
+      expect(columns(100000), kShowcaseMaxColumns);
     });
 
     test('honours an overridden minTileWidth and maxColumns', () {
-      const narrow = ShowcaseEntryList(
-        entries: [],
-        minTileWidth: 100,
-        maxColumns: 2,
+      expect(columns(208, minTileWidth: 100, maxColumns: 2), 2);
+      expect(columns(100000, minTileWidth: 100, maxColumns: 2), 2);
+    });
+  });
+
+  group('theme fallback', () {
+    testWidgets('takes its layout from the ambient theme', (tester) async {
+      // A theme narrow enough to fit four columns where the default fits two.
+      await pumpAt(
+        tester,
+        const ShowcaseTheme(
+          data: ShowcaseThemeData(minTileWidth: 100, padding: EdgeInsets.zero),
+          child: _Entries(count: 4),
+        ),
+        size: const Size(600, 900),
       );
-      expect(narrow.columnsFor(208, 8), 2);
-      expect(narrow.columnsFor(100000, 8), 2);
+
+      // 600 / 100 caps at the theme's default 4 columns: one row.
+      expect(find.byType(IntrinsicHeight), findsOneWidget);
+      expect(find.byType(ShowcaseEntryTile), findsNWidgets(4));
+    });
+
+    testWidgets('a constructor argument overrides the theme', (tester) async {
+      await pumpAt(
+        tester,
+        const ShowcaseTheme(
+          data: ShowcaseThemeData(minTileWidth: 100, padding: EdgeInsets.zero),
+          child: _Entries(count: 4, maxColumns: 2),
+        ),
+        size: const Size(600, 900),
+      );
+
+      // Two columns over four entries: two rows.
+      expect(find.byType(IntrinsicHeight), findsNWidgets(2));
+    });
+
+    testWidgets('the tile spacing comes from the theme', (tester) async {
+      await pumpAt(
+        tester,
+        ShowcaseTheme(
+          data: const ShowcaseThemeData(coverSpacing: 40),
+          child: ShowcaseEntryList(
+            entries: [
+              ShowcaseEntry(
+                title: 'A',
+                subtitle: 's',
+                icon: const Icon(Icons.star),
+                builder: (_) => const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+        size: const Size(400, 900),
+      );
+
+      final gap = tester.widgetList<SizedBox>(
+        find.descendant(
+          of: find.byType(ShowcaseEntryTile),
+          matching: find.byType(SizedBox),
+        ),
+      );
+      expect(gap.any((b) => b.height == 40), isTrue);
     });
   });
 
@@ -185,4 +250,16 @@ void main() {
       expect(find.text('page 1'), findsOneWidget);
     });
   });
+}
+
+/// A list of [count] entries, for the theme-fallback group.
+class _Entries extends StatelessWidget {
+  const _Entries({required this.count, this.maxColumns});
+
+  final int count;
+  final int? maxColumns;
+
+  @override
+  Widget build(BuildContext context) =>
+      ShowcaseEntryList(entries: entries(count), maxColumns: maxColumns);
 }
