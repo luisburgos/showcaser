@@ -41,6 +41,9 @@ coverage/
 # ship. Re-list them here.
 build/
 .dart_tool/
+# Generated dartdoc output. `dart doc` writes here, and since .pubignore
+# replaces .gitignore for publishing, the pattern must be repeated.
+doc/api/
 .fvm/
 .idea/
 .vscode/
