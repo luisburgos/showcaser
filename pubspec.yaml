@@ -2,6 +2,7 @@ name: showcaser
 description: "A gallery shell for component showcases: responsive entry tiles with cover art, routing to the page each one documents."
 version: 0.1.0
 repository: https://github.com/luisburgos/showcaser
+issue_tracker: https://github.com/luisburgos/showcaser/issues
 
 # Max 5, lowercase alphanumeric or hyphens, 2-32 chars each.
 topics:
