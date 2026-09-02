@@ -75,3 +75,23 @@ jobs:
 
       - name: Analyze
         run: flutter analyze
+
+  # A version bump must arrive as its own PR: squash-merge would otherwise
+  # destroy the bump commit along with the feature branch, leaving the release
+  # with no commit of its own on main. The check lives in a script so it can be
+  # run and tested locally rather than only on a pushed branch.
+  version_bump_is_alone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The three-dot diff needs the merge base, not a shallow tip.
+          fetch-depth: 0
+
+      # The guard has its own tests, since a check nobody exercises is a
+      # check nobody can safely change.
+      - name: Test the guard
+        run: tool/check_version_bump_is_alone_test.sh
+
+      - name: A version bump must be its own PR
+        run: tool/check_version_bump_is_alone.sh "origin/${{ github.base_ref }}"

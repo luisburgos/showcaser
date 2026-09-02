@@ -33,6 +33,23 @@ pre-push:
       priority: 3
       run: 'if command -v very_good >/dev/null 2>&1; then fvm exec very_good test --coverage --min-coverage 100; else echo "very_good_cli not found; running tests without the coverage gate (CI still enforces 100%). Install: dart pub global activate very_good_cli"; fvm flutter test; fi'
       fail_text: "❌ tests or 100% coverage failed. Run: fvm exec very_good test --coverage --min-coverage 100"
+    version-bump-is-alone:
+      # Mirrors CI's version_bump_is_alone job, running the very same script.
+      #
+      # A version bump must be its own PR: this repo squash-merges, so a bump
+      # committed on a feature branch is erased with that branch's history and
+      # the release leaves no commit on main. Catching it here means the branch
+      # is never pushed and no CI run is spent saying so.
+      #
+      # Fetches first: the check diffs against origin/main, and a stale ref
+      # makes it stricter rather than laxer, which would fail a legitimate
+      # release PR. The fetch is quiet and failure-tolerant, so working offline
+      # falls back to whatever origin/main is on disk rather than blocking the
+      # push (CI remains the authoritative gate).
+      priority: 5
+      run: 'git fetch --quiet origin main 2>/dev/null || true; tool/check_version_bump_is_alone_test.sh >/dev/null && tool/check_version_bump_is_alone.sh'
+      fail_text: "❌ This branch changes the version AND other files. Land the other work first, then open a separate chore(release) PR."
+
     spell-check:
       # Mirrors the CI spell-check gate (cspell over **/*.md, .github/cspell.json).
       # Prefers a local/global cspell, falls back to npx; if neither Node tool

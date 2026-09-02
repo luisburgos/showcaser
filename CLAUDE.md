@@ -13,6 +13,15 @@ rules below are the hard gates an agent must not cross on its own judgment.
 - **Do not push branches or open PRs before the user validates the change**
   and approves, unless they explicitly ask for the push/PR. Commit locally
   and report "committed, not pushed".
+- **Never put a version bump in a PR that changes anything else.** The bump is
+  always its own `chore(release): bump to X.Y.Z` PR, opened only after the
+  feature work has already landed on `main`. Squash-merge destroys the branch's
+  commits, so a piggy-backed bump erases the release from history entirely.
+  If you notice mid-branch that a release is due, finish and land the branch
+  first, then start a fresh one for the bump. The pre-push hook and CI both
+  run `tool/check_version_bump_is_alone.sh`, so a piggy-backed bump is
+  refused before it reaches the remote. Do not rely on either to catch it: a
+  branch that should never have existed still costs the time to make it.
 
 ## Release checklist pointers
 
