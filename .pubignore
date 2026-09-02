@@ -54,3 +54,6 @@ migrate_working_dir/
 .DS_Store
 *.iml
 *.log
+
+# Release-guard scripts. Developer tooling, not consumer-facing.
+tool/
