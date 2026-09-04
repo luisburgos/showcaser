@@ -178,6 +178,17 @@ fvm dart pub publish --dry-run   # review this together first
 fvm dart pub publish             # only after the explicit go
 ```
 
+**Read the dry-run's file tree, not just its warning count.** `.pubignore`
+*replaces* `.gitignore` for publishing rather than merging with it, so once it
+exists it owns the entire exclusion list: any directory added to the repo since
+it was last edited ships unless it is listed there. `pub publish` reports no
+warning for this, so the file tree it prints is the only place it shows up.
+
+This has bitten twice, both times a directory added for a good reason and never
+listed: `doc/api/` (generated docs) and `tool/` (release scripts). Scan the tree
+for anything that is not `lib/`, `example/`, the README, the changelog, the
+license and the pubspec.
+
 Published versions are **immutable**: a version can never be replaced or
 deleted, only followed by a newer one.
 
