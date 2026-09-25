@@ -9,7 +9,7 @@
 # branch is pushed and a PR is opened.
 #
 # All commands run through `fvm` so they use the SDK pinned in .fvmrc
-# (Flutter 3.44.0) rather than whatever happens to be first on PATH.
+# (Flutter 3.47.5) rather than whatever happens to be first on PATH.
 
 pre-push:
   parallel: false
