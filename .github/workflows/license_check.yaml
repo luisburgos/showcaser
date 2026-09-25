@@ -31,7 +31,7 @@ jobs:
       # unset makes the job run `dart pub get`, which fails with "Because
       # flutter_flowin requires the Flutter SDK, version solving failed."
       # Pinned to the same version as ci.yaml's build job.
-      flutter_version: "3.44.x"
+      flutter_version: "3.47.x"
       # Zlib covers `vector_math`, which ships with the Flutter SDK itself
       # (alongside sky_engine/meta) and is therefore unavoidable in any
       # Flutter package. It is a permissive, BSD-style license.
