@@ -23,7 +23,7 @@ jobs:
   # job: v1.21.1 installs very_good_cli 1.5.0 (Dart ^3.13), and Flutter 3.44
   # ships Dart 3.12. Move both back to @v1 together.
   license_check:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1.21.0
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/license_check.yml@v1.21.1
     with:
       # This is a Flutter package, so dependencies must be resolved with
       # `flutter pub get`. The reusable workflow derives that from
