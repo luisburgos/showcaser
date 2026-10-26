@@ -20,7 +20,7 @@ jobs:
   # rather than authored prose. Spell-gating it would fail the build on words
   # nobody can edit without rewriting history.
   spell-check:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/spell_check.yml@v1
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/spell_check.yml@v2
     with:
       includes: |
         **/*.md
